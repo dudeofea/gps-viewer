@@ -36,15 +36,30 @@ $(window).load(function(){
 		markers = [];
 		//create map markers
 		var bounds = new google.maps.LatLngBounds();
-		var pos = {lat: 0, lng: 0};
+		var pos = new google.maps.LatLng(0, 0);
+		var m_color = '#5BC0BE';
 		for (var i = 0; i < val.length; i++) {
 			//get the coordinates
 			var coord = val[i].replace(' ', '').replace('(', '').replace(')', '').split(',');
 			var lat = parseFloat(coord[0]);
 			var lon = parseFloat(coord[1]);
-			var pos = new google.maps.LatLng(lat, lon);
-			var m_color = color_mix('#5BC0BE', '#0B132B', i/val.length);
-			console.log(m_color);
+			new_pos = new google.maps.LatLng(lat, lon);
+			if(new_pos.lat() == pos.lat() && new_pos.lng() == pos.lng()){
+				continue;
+			}
+			console.log(new_pos.lat());
+			//create a path between them
+			var path = new google.maps.Polyline({
+				path: [pos, new_pos],
+				geodesic: true,
+				strokeColor: m_color,
+				strokeOpacity: 1.0,
+				strokeWeight: 2
+			});
+			path.setMap(map);
+			//create new icon
+			pos = new_pos;
+			m_color = color_mix('#5BC0BE', '#0B132B', i/val.length);
 			var icon = create_marker_icon(m_color);
 			//make the marker
 			markers.push(new google.maps.Marker({
@@ -86,15 +101,16 @@ $(window).load(function(){
 	};
 	//creates a data URI containing the icon image of said color
 	var create_marker_icon = function(color){
+		var size = 20;
 		var c = document.createElement('canvas');
-		c.width = 20;
-		c.height = 20;
+		c.width = size;
+		c.height = size;
 		var ctx = c.getContext("2d");
 
 		ctx.fillStyle = color;
 		ctx.beginPath();
-		ctx.arc(10,10,7.5,0,2*Math.PI);
-		ctx.stroke();
+		ctx.arc(size/2,size/2,0.3*size,0,2*Math.PI);
+		ctx.fill();
 		return c.toDataURL();
 	};
 });
