@@ -17,6 +17,7 @@ function initMap(){
 
 $(window).load(function(){
 	var key_timeout = false;
+	var markers = [];
 	//Refresh the map points when the text changes
 	$('.points').keyup(function(){
 		if(key_timeout == true){
@@ -28,6 +29,72 @@ $(window).load(function(){
 		}, 300);
 		var val = $(this).val();
 		val = val.split('\n');
-		console.log(val);
+		//clear previous markers
+		for (var i = 0; i < markers.length; i++) {
+			markers[i].setMap(null);
+		}
+		markers = [];
+		//create map markers
+		var bounds = new google.maps.LatLngBounds();
+		var pos = {lat: 0, lng: 0};
+		for (var i = 0; i < val.length; i++) {
+			//get the coordinates
+			var coord = val[i].replace(' ', '').replace('(', '').replace(')', '').split(',');
+			var lat = parseFloat(coord[0]);
+			var lon = parseFloat(coord[1]);
+			var pos = new google.maps.LatLng(lat, lon);
+			var m_color = color_mix('#5BC0BE', '#0B132B', i/val.length);
+			console.log(m_color);
+			var icon = create_marker_icon(m_color);
+			//make the marker
+			markers.push(new google.maps.Marker({
+				position: pos,
+				map: map,
+				icon: icon
+			}));
+			//expand bounds to fit
+			bounds.extend(pos);
+		}
+		map.fitBounds(bounds);
 	});
+	//returns a color partway between two others
+	var color_mix = function(color_start, color_end, mix){
+		color_start = color_start.replace('#', '');
+		color_end = color_end.replace('#', '');
+		var c1 = {
+			r: parseInt(color_start[0]+color_start[1], 16),
+			g: parseInt(color_start[2]+color_start[3], 16),
+			b: parseInt(color_start[4]+color_start[5], 16),
+		};
+		var c2 = {
+			r: parseInt(color_end[0]+color_end[1], 16),
+			g: parseInt(color_end[2]+color_end[3], 16),
+			b: parseInt(color_end[4]+color_end[5], 16),
+		};
+		var c3 = {
+			r: (1-mix)*c1.r + (mix)*c2.r,
+			g: (1-mix)*c1.g + (mix)*c2.g,
+			b: (1-mix)*c1.b + (mix)*c2.b,
+		}
+		var sr = parseInt(c3.r).toString(16);
+		var sg = parseInt(c3.g).toString(16);
+		var sb = parseInt(c3.b).toString(16);
+		if(sr.length < 2){ sr = '0' + sr; }
+		if(sg.length < 2){ sg = '0' + sg; }
+		if(sb.length < 2){ sb = '0' + sb; }
+		return '#' + sr + sg + sb;
+	};
+	//creates a data URI containing the icon image of said color
+	var create_marker_icon = function(color){
+		var c = document.createElement('canvas');
+		c.width = 20;
+		c.height = 20;
+		var ctx = c.getContext("2d");
+
+		ctx.fillStyle = color;
+		ctx.beginPath();
+		ctx.arc(10,10,7.5,0,2*Math.PI);
+		ctx.stroke();
+		return c.toDataURL();
+	};
 });
