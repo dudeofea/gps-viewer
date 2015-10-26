@@ -44,19 +44,23 @@ $(window).load(function(){
 			var lat = parseFloat(coord[0]);
 			var lon = parseFloat(coord[1]);
 			new_pos = new google.maps.LatLng(lat, lon);
-			if(new_pos.lat() == pos.lat() && new_pos.lng() == pos.lng()){
-				continue;
-			}
-			console.log(new_pos.lat());
+
+			//ignore duplicates
+			// if(new_pos.lat() == pos.lat() && new_pos.lng() == pos.lng()){
+			// 	continue;
+			// }
+
 			//create a path between them
-			var path = new google.maps.Polyline({
-				path: [pos, new_pos],
-				geodesic: true,
-				strokeColor: m_color,
-				strokeOpacity: 1.0,
-				strokeWeight: 2
-			});
-			path.setMap(map);
+			if(i > 0){
+				var path = new google.maps.Polyline({
+					path: [pos, new_pos],
+					geodesic: true,
+					strokeColor: m_color,
+					strokeOpacity: 1.0,
+					strokeWeight: 2
+				});
+				path.setMap(map);
+			}
 			//create new icon
 			pos = new_pos;
 			m_color = color_mix('#5BC0BE', '#0B132B', i/val.length);
@@ -113,4 +117,49 @@ $(window).load(function(){
 		ctx.fill();
 		return c.toDataURL();
 	};
+	var occurences = function(string, subString, allowOverlapping) {
+		string += "";
+		subString += "";
+		if (subString.length <= 0) return (string.length + 1);
+
+		var n = 0,
+		pos = 0,
+		step = allowOverlapping ? 1 : subString.length;
+
+		while (true) {
+			pos = string.indexOf(subString, pos);
+			if (pos >= 0) {
+				++n;
+				pos += step;
+			} else break;
+		}
+		return n;
+	};
+	$(document).mouseup(function(){
+		//undo selection
+		for (var i = 0; i < markers.length; i++) {
+			markers[i].setIcon(
+				create_marker_icon(
+					color_mix('#5BC0BE', '#0B132B', i/markers.length)
+				)
+			);
+		}
+		//get the selected text
+		var text = "";
+		if (window.getSelection) {
+			text = window.getSelection().toString();
+		} else if (document.selection && document.selection.type != "Control") {
+			text = document.selection.createRange().text;
+		}
+		if(text == ""){ return;	}
+		//console.log(text);
+		var all = $('.points').val();
+		var start = all.substring(0, all.indexOf(text));
+		var n_start = occurences(start, '\n');
+		var n_text = occurences(text, '\n');
+		console.log(n_start, n_text);
+		for (var i = n_start; i < n_start+n_text+1; i++) {
+			markers[i].setIcon(create_marker_icon('#FFFFFF'));
+		}
+	});
 });
