@@ -61,6 +61,7 @@ $(window).load(function(){
 		}, 300);
 		var val = $(this).val();
 		val = val.split('\n');
+		console.log(val);
 		//clear previous markers
 		for (var i = 0; i < markers.length; i++) {
 			markers[i].setMap(null);
@@ -75,6 +76,9 @@ $(window).load(function(){
 			var coord = val[i].replace(' ', '').replace('(', '').replace(')', '').split(',');
 			var lat = parseFloat(coord[0]);
 			var lon = parseFloat(coord[1]);
+			if(isNaN(lat) || isNaN(lon)){
+				continue;
+			}
 			new_pos = new google.maps.LatLng(lat, lon);
 
 			//ignore duplicates
