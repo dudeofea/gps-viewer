@@ -15,9 +15,41 @@ function initMap(){
 	map.setOptions({styles: styles});
 }
 
+//thanks to http://stackoverflow.com/a/950146
+function load_script(url, callback){
+	// Adding the script tag to the head as suggested before
+	var head = document.getElementsByTagName('head')[0];
+	var script = document.createElement('script');
+	script.type = 'text/javascript';
+	script.src = url;
+	// Then bind the event to the callback function.
+	// There are several events for cross browser compatibility.
+	script.onreadystatechange = callback;
+	script.onload = callback;
+	// Fire the loading
+	head.appendChild(script);
+};
+
+//get our script's path
+var scripts = document.getElementsByTagName("script"),
+	script_src = scripts[scripts.length-1].src,
+	base = script_src.split('/');
+base.pop(); base = base.join('/');
+
 $(window).load(function(){
 	var key_timeout = false;
 	var markers = [];
+	//get api key from file
+	var xhr = new XMLHttpRequest();
+	xhr.onreadystatechange = function (e) {
+		if (xhr.readyState == 4 && xhr.status == 200) {
+			var key = xhr.responseText;
+			//load google maps script
+			load_script("https://maps.googleapis.com/maps/api/js?key="+key+"&callback=initMap");
+		}
+	}
+	xhr.open("GET", base+'/api_key.json', true);
+	xhr.send();
 	//Refresh the map points when the text changes
 	$('.points').keyup(function(){
 		if(key_timeout == true){
