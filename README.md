@@ -5,4 +5,8 @@
 A Nice UI for viewing lat/long paths on a map
 
 # installation
-To run, just open index.html in a browser
+To run, I suggest using `http-server` from [npm](https://www.npmjs.com/package/http-server) (I also suggest using it as much as possible.
+
+like so: `http-server .`
+
+[alternatives](https://gist.github.com/willurd/5720255)
