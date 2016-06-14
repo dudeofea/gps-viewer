@@ -76,7 +76,8 @@ $(window).load(function(){
 			var coord = val[i].replace(' ', '').replace('(', '').replace(')', '').split(',');
 			var lat = parseFloat(coord[0]);
 			var lon = parseFloat(coord[1]);
-			if(isNaN(lat) || isNaN(lon)){
+			//check if valid
+			if(isNaN(lat) || isNaN(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180){
 				continue;
 			}
 			new_pos = new google.maps.LatLng(lat, lon);
@@ -110,7 +111,9 @@ $(window).load(function(){
 			//expand bounds to fit
 			bounds.extend(pos);
 		}
-		map.fitBounds(bounds);
+		if(markers.length > 0){
+			map.fitBounds(bounds);
+		}
 	});
 	//returns a color partway between two others
 	var color_mix = function(color_start, color_end, mix){
