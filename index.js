@@ -39,6 +39,7 @@ base.pop(); base = base.join('/');
 $(window).load(function(){
 	var key_timeout = false;
 	var markers = [];
+	var paths = [];
 	//get api key from file
 	var xhr = new XMLHttpRequest();
 	xhr.onreadystatechange = function (e) {
@@ -61,12 +62,16 @@ $(window).load(function(){
 		}, 300);
 		var val = $(this).val();
 		val = val.split('\n');
-		console.log(val);
 		//clear previous markers
 		for (var i = 0; i < markers.length; i++) {
 			markers[i].setMap(null);
 		}
 		markers = [];
+		//clear previous paths
+		for (var i = 0; i < paths.length; i++) {
+			paths[i].setMap(null);
+		}
+		paths = [];
 		//create map markers
 		var bounds = new google.maps.LatLngBounds();
 		var pos = new google.maps.LatLng(0, 0);
@@ -89,14 +94,14 @@ $(window).load(function(){
 
 			//create a path between them
 			if(i > 0){
-				var path = new google.maps.Polyline({
+				paths.push(new google.maps.Polyline({
 					path: [pos, new_pos],
 					geodesic: true,
 					strokeColor: m_color,
 					strokeOpacity: 1.0,
-					strokeWeight: 2
-				});
-				path.setMap(map);
+					strokeWeight: 2,
+					map: map
+				}));
 			}
 			//create new icon
 			pos = new_pos;
@@ -154,7 +159,13 @@ $(window).load(function(){
 		ctx.beginPath();
 		ctx.arc(size/2,size/2,0.3*size,0,2*Math.PI);
 		ctx.fill();
-		return c.toDataURL();
+		var url = c.toDataURL();
+
+		var markerImage = new google.maps.MarkerImage(url,
+                new google.maps.Size(size, size),
+                new google.maps.Point(0, 0),
+                new google.maps.Point(size/2, size/2));
+		return markerImage;
 	};
 	var occurences = function(string, subString, allowOverlapping) {
 		string += "";
@@ -196,9 +207,11 @@ $(window).load(function(){
 		var start = all.substring(0, all.indexOf(text));
 		var n_start = occurences(start, '\n');
 		var n_text = occurences(text, '\n');
-		console.log(n_start, n_text);
+		//console.log(n_start, n_text);
 		for (var i = n_start; i < n_start+n_text+1; i++) {
-			markers[i].setIcon(create_marker_icon('#FFFFFF'));
+			if(i >= 0 && i < markers.length){
+				markers[i].setIcon(create_marker_icon('#FFFFFF'));
+			}
 		}
 	});
 });
